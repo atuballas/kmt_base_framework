@@ -6,7 +6,7 @@ class Database{
 	const password = '';
 	const database = 'bbcms';
 	
-	static public function dbConnect(){
+	final public function dbConnect(){
 		$connection = mysql_connect( self::hostname, self::username, self::password );
 		if( $connection ){
 			if( ! mysql_select_db( self::database, $connection ) ){

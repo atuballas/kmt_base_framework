@@ -1,35 +1,19 @@
 <?php
 class FrontController{
-	protected static $controller = DEFAULTCONTROLLER;
-	protected static $method = 'index';
-	protected static $parameters = array();
-	protected static $config = array();
-	
-	final static public function initSystem(){
-		session_start();
-		include_once( 'includes/configuration.php' );
-		include_once( 'includes/database.php' );
-		
-		if( defined( ENVIRONMENT ) ){
-			switch( ENVIRONMENT ){
-				case 'development':
-					error_reporting(E_ALL);
-				break;
-				case 'production';
-					error_reporting(0);
-				break;
-				default:
-					exit( 'Application environment is not set properly.' );
-				break;
-			}
-		}
-		self::$config = $config;
-		Database::dbConnect();
-		self::router();
+
+	protected $controller = DEFAULTCONTROLLER;
+	protected $method = 'index';
+	protected $parameters = array();
+	protected $config = array();
+
+	final public function initSystem(){
+		$dbObj = new Database();
+		$dbObj->dbConnect();
+		$this->router();
 	}
 
-	final static private function loadController(){
-		if( ! file_exists( CONTROLLERSFOLDER . self::$controller . EXT ) ){
+	final private function loadController(){
+		if( ! file_exists( CONTROLLERSFOLDER . $this->controller . EXT ) ){
 			echo 'error 404';
 			exit;
 		}
@@ -37,12 +21,12 @@ class FrontController{
 		Load the controller class file and execute its method, based
 		on the requested URI string
 		*/
-		include_once( CONTROLLERSFOLDER . self::$controller . EXT );
-		self::$controller = explode( '/', self::$controller );
-		self::$controller = end( self::$controller );
-		$classname = ucfirst( strtolower( self::$controller ) );
+		include_once( CONTROLLERSFOLDER . $this->controller . EXT );
+		$this->controller = explode( '/', $this->controller );
+		$this->controller = end( $this->controller );
+		$classname = ucfirst( strtolower( $this->controller ) );
 		$classname = new $classname();	// create class instance
-		$method = self::$method;
+		$method = $this->method;
 		if( ! method_exists( $classname, $method ) ){
 			echo 'error 404';
 			exit;
@@ -51,23 +35,19 @@ class FrontController{
 	}
 	
 	final protected function autoLoader(){
-		$autoload = self::$config['autoload'];
-		
+		include_once( 'autoload.php' );
+	
 		// autoload libraries
 		if( isset( $autoload['libraries'] ) && ! empty( $autoload['libraries'] ) ){
 			foreach( $autoload['libraries'] as $k => $v ){
-				include_once( LIBRARIESFOLDER . $v . EXT );
-				$libraryClass = ucfirst( strtolower( $v ) );
-				$this->$v = new $libraryClass();	// create class instance
+				$this->loadLibrary( $v );
 			}
 		}
 		
 		// autoload helpers
 		if( isset( $autoload['helpers'] ) && ! empty( $autoload['helpers'] ) ){
 			foreach( $autoload['helpers'] as $k => $v ){
-				include_once( HELPERSFOLDER . $v . EXT );
-				$helperClass = ucfirst( strtolower( $v ) );
-				$this->$v = new $helperClass();	// create class instance
+				$this->loadHelper( $v );
 			}
 		}
 	}
@@ -119,7 +99,7 @@ class FrontController{
 		$this->$helper = new $classname();	// create class instance, and return the instance to the passed parameter
 	}
 	
-	final static private function router(){
+	final private function router(){
 		$uri = $_SERVER['REQUEST_URI'];
 		$uri = rtrim( ltrim( $uri, '/' ), '/' );
 		$uri = explode( '/', $uri );
@@ -133,7 +113,7 @@ class FrontController{
 			foreach( $uri as $i=>$u ){
 				if( $segments == $i ) break;
 				if( file_exists( CONTROLLERSFOLDER . $controllerPath . ( ( APPDIR != '' ) ? $uri[$i+1]: $uri[$i] ) . EXT ) ){
-					self::$controller = $controllerPath . ( ( APPDIR != '' ) ? $uri[$i+1]: $uri[$i] );
+					$this->controller = $controllerPath . ( ( APPDIR != '' ) ? $uri[$i+1]: $uri[$i] );
 					$isSeen = true;
 					$lastSegment = ( ( APPDIR != '' ) ? $i+1 : $i );
 					break;
@@ -149,17 +129,17 @@ class FrontController{
 		
 		// Determine the proper method
 		if( isset( $uri[$lastSegment+1] ) && $uri[$lastSegment+1] != '' ){
-			self::$method = $uri[$lastSegment+1];
+			$this->method = $uri[$lastSegment+1];
 		}
 		
 		// Determine the proper parameters
 		if( $segments > $lastSegment+1 ){
 			for( $i=$lastSegment+2; $i<( ( APPDIR != '' ) ? $segments+1 : $segments ); $i++ ){
-				self::$parameters[] = $uri[$i];
+				$this->parameters[] = $uri[$i];
 			}
 		}
 	
-		self::loadController();
+		$this->loadController();
 	}
 }
 ?>

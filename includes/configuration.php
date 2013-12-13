@@ -9,7 +9,7 @@ Website Application directory relative to root
 where the application scripts are placed. If
 installedin root just leave blank
 */
-define( 'APPDIR', '' );
+define( 'APPDIR', '_a_basefw' );
 
 /*
 Site URL
@@ -100,7 +100,5 @@ Benchmark
 define( 'BENCHMARK', true );
 
 //////////////////////////////////////////////////////// ADDITIONAL CONFIGURATION //////////////////////////////////////////////////////
-$config['autoload']['libraries'] = array( 'validator' );
-$config['autoload']['helpers'] = array( 'db', 'url' );
 
 ?>

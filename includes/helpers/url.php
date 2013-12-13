@@ -23,7 +23,7 @@ class Url extends FrontController{
 	@return: string
 	*/
 	public function getControllerName(){
-		return FrontController::$controller;
+		return $this->controller;
 	}
 	
 	/*
@@ -33,7 +33,7 @@ class Url extends FrontController{
 	@return: string
 	*/
 	public function getMethodName(){
-		return FrontController::$method;
+		return $this->method;
 	}
 	
 	/*
@@ -43,7 +43,7 @@ class Url extends FrontController{
 	@return: array
 	*/
 	public function getParameters(){
-		return FrontController::$parameters;
+		return $this->parameters;
 	}
 	
 	/*
